@@ -71,15 +71,9 @@ This project is a web-based application designed to manage drone survey missions
 │   │   │   │   └── page.tsx
 │   │   │   ├── fleet/page.tsx # Placeholder for fleet management
 │   │   │   └── layout.tsx   # Dashboard layout with sidebar navigation
-│   │   ├── api/            # Next.js API routes (placeholders)
-│   │   │   ├── analytics/route.ts
-│   │   │   ├── drones/route.ts
-│   │   │   ├── missions/route.ts
-│   │   │   └── websocket/route.ts
 │   │   ├── context/
 │   │   │   └── MissionContext.tsx # React Context for global mission state
 │   │   ├── lib/            # Utility functions and mock data
-│   │   │   ├── database.ts # Placeholder for database connection
 │   │   │   ├── mockMissions.ts # Mock data for missions
 │   │   │   ├── types.ts    # Global type definitions
 │   │   │   └── utils.ts    # General utility functions (e.g., getStatusColor, getContinent)
