@@ -1,10 +1,10 @@
 'use client';
 
-import { useMissionContext } from '@/app/context/MissionContext';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, PieChart, Pie, Legend } from 'recharts';
+import { useMission } from '../../context/MissionContext';
 
 export default function AnalyticsPage() {
-  const { missions } = useMissionContext();
+  const { missions } = useMission();
 
   // Calculate statistics
   const totalMissions = missions.length;

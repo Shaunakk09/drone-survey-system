@@ -1,12 +1,12 @@
 'use client';
 import dynamic from 'next/dynamic';
-import { useMissionContext } from '@/app/context/MissionContext';
+import { useMission } from '../../context/MissionContext';
 
 // Dynamically import the globe component to avoid SSR issues
 const MissionGlobe = dynamic(() => import('./components/MissionGlobe'), { ssr: false });
 
 export default function DashboardPage() {
-  const { missions } = useMissionContext();
+  const { missions } = useMission();
 
   // Calculate stats
   const activeMissions = missions.filter(m => m.status === 'in-progress').length;
@@ -14,12 +14,8 @@ export default function DashboardPage() {
   const totalFlights = missions.length;
 
   return (
-    <div className="p-4 space-y-6 w-full">
-      {/* Header Section with Title and Actions */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h1 className="text-2xl font-bold text-white">Dashboard</h1>
-      </div>
-      
+    <div className="m-4 space-y-6 w-full">
+    
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         <div className="p-4 sm:p-6 bg-slate-800 rounded-lg shadow-lg border border-slate-700">
@@ -39,7 +35,7 @@ export default function DashboardPage() {
       {/* Globe Section */}
       <div className="w-full">
         <h2 className="mb-4 text-xl font-semibold text-white">Mission Locations</h2>
-        <div className="transition-all duration-300" style={{ marginLeft: 'var(--sidebar-width, -180px)'}}>
+        <div className="transition-all duration-500 ease-in-out transform">
           <MissionGlobe />
         </div>
       </div>
