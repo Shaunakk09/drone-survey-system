@@ -2,6 +2,8 @@
 
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, PieChart, Pie, Legend } from 'recharts';
 import { useMission } from '../../context/MissionContext';
+import { getContinent } from '../../lib/utils';
+import { CustomTooltip, PieTooltip } from './components/ChartTooltips';
 
 export default function AnalyticsPage() {
   const { missions } = useMission();
@@ -31,81 +33,29 @@ export default function AnalyticsPage() {
     { name: 'Pending', value: pendingMissions, color: '#F59E0B' },
   ];
 
-  // Function to determine continent based on coordinates
-  const getContinent = (lat: number, lng: number) => {
-    if (lat >= 0 && lat <= 90 && lng >= -180 && lng <= 180) {
-      if (lat >= 60) return 'North America';
-      if (lat >= 0 && lat < 60) {
-        if (lng >= -180 && lng < -30) return 'North America';
-        if (lng >= -30 && lng < 60) return 'Europe';
-        if (lng >= 60 && lng < 180) return 'Asia';
-      }
-    }
-    if (lat < 0 && lat >= -90 && lng >= -180 && lng <= 180) {
-      if (lat <= -60) return 'Antarctica';
-      if (lat < 0 && lat > -60) {
-        if (lng >= -180 && lng < -30) return 'South America';
-        if (lng >= -30 && lng < 60) return 'Africa';
-        if (lng >= 60 && lng < 180) return 'Australia';
-      }
-    }
-    return 'Unknown';
-  };
-
-  // Prepare data for the pie chart
+  // Prepare data for the Drone Distribution by Continent Pie Chart.
+  // It aggregates missions by continent.
   const continentData = missions.reduce((acc: { name: string; value: number }[], mission) => {
-    const continent = getContinent(mission.latitude, mission.longitude);
-    const existing = acc.find(item => item.name === continent);
+    const continent = getContinent(mission.latitude, mission.longitude); // Get continent for current mission
+    const existing = acc.find(item => item.name === continent); // Check if continent already in accumulator
     if (existing) {
-      existing.value++;
+      existing.value++; // Increment count if continent exists
     } else {
-      acc.push({ name: continent, value: 1 });
+      acc.push({ name: continent, value: 1 }); // Add new continent with count 1
     }
     return acc;
   }, []);
 
-  // Get recent activity
+  // Get recent activity for display.
   const recentActivity = missions
+    // Sort missions by their `updatedAt` timestamp in descending order (most recent first).
     .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
-    .slice(0, 2)
+    .slice(0, 2) // Take only the two most recent activities
     .map(mission => ({
-      type: mission.status === 'completed' ? 'mission_completed' : 'mission_created',
-      mission: mission.name,
-      timestamp: mission.updatedAt,
+      type: mission.status === 'completed' ? 'mission_completed' : 'mission_created', // Determine activity type
+      mission: mission.name, // Mission name
+      timestamp: mission.updatedAt, // Timestamp of the activity
     }));
-
-  // Custom tooltip for bar chart
-  interface TooltipProps {
-    active?: boolean;
-    payload?: Array<{
-      value: number;
-      name: string;
-    }>;
-    label?: string;
-  }
-
-  const CustomTooltip = ({ active, payload, label }: TooltipProps) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-gray-800 p-2 border border-gray-700 rounded shadow-lg">
-          <p className="text-gray-200">{`${label}: ${payload[0].value}`}</p>
-        </div>
-      );
-    }
-    return null;
-  };
-
-  // Custom tooltip for pie chart
-  const PieTooltip = ({ active, payload }: TooltipProps) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-gray-800 p-2 border border-gray-700 rounded shadow-lg">
-          <p className="text-gray-200">{`${payload[0].name}: ${payload[0].value} missions`}</p>
-        </div>
-      );
-    }
-    return null;
-  };
 
   return (
     <div className="m-4">

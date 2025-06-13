@@ -3,14 +3,25 @@ import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { useMission } from '../../../context/MissionContext';
 import { FlightConfig } from '../../../../types/FlightConfig';
+import FlightConfigInputs from '../[id]/components/FlightConfigInputs';
 
 // Dynamically import the map component to avoid SSR issues
 const MissionMap = dynamic(() => import('../components/MissionMap'), { ssr: false });
 
+/**
+ * Props for the NewMissionForm component.
+ * @interface NewMissionFormProps
+ * @param {() => void} onClose - Callback function to close the new mission form modal.
+ */
 interface NewMissionFormProps {
   onClose: () => void;
 }
 
+/**
+ * NewMissionForm component provides a form for users to create new drone survey missions.
+ * It includes fields for mission details and an interactive map for configuring flight paths and survey areas.
+ * Data is managed locally using React's `useState` and then added to the global mission context upon submission.
+ */
 export default function NewMissionForm({ onClose }: NewMissionFormProps) {
   const router = useRouter();
   const { missions, setMissions } = useMission();
@@ -40,6 +51,11 @@ export default function NewMissionForm({ onClose }: NewMissionFormProps) {
     }
   });
 
+  /**
+   * Handles changes for basic form input fields (text, textarea, select).
+   * Updates the `formData` state dynamically based on input `name` and `value`.
+   * @param {React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>} e - The change event object.
+   */
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -48,6 +64,12 @@ export default function NewMissionForm({ onClose }: NewMissionFormProps) {
     }));
   };
 
+  /**
+   * Handles updates to the flight configuration. This function is passed to the MissionMap component
+   * to receive updates on drawn or edited shapes (survey area, flight path) and other configuration changes.
+   * It merges new configuration parts with the existing `flightConfig` state.
+   * @param {Partial<FlightConfig>} config - Partial FlightConfig object with updated properties.
+   */
   const handleConfigUpdate = (config: Partial<FlightConfig>) => {
     setFlightConfig(prevConfig => ({
       ...prevConfig,
@@ -69,6 +91,13 @@ export default function NewMissionForm({ onClose }: NewMissionFormProps) {
     }));
   };
 
+  /**
+   * Handles the form submission event.
+   * Prevents default form submission, sets loading state, creates a new mission object,
+   * adds it to the global mission context, navigates to the new mission's detail page,
+   * and then closes the form.
+   * @param {React.FormEvent} e - The form submission event object.
+   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -110,6 +139,7 @@ export default function NewMissionForm({ onClose }: NewMissionFormProps) {
             <button
               onClick={onClose}
               className="text-gray-400 hover:text-white"
+              aria-label="Close form"
             >
               ✕
             </button>
@@ -120,11 +150,12 @@ export default function NewMissionForm({ onClose }: NewMissionFormProps) {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">
+                  <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-1">
                     Mission Name
                   </label>
                   <input
                     type="text"
+                    id="name"
                     name="name"
                     value={formData.name}
                     onChange={handleInputChange}
@@ -135,10 +166,11 @@ export default function NewMissionForm({ onClose }: NewMissionFormProps) {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">
+                  <label htmlFor="description" className="block text-sm font-medium text-gray-300 mb-1">
                     Description
                   </label>
                   <textarea
+                    id="description"
                     name="description"
                     value={formData.description}
                     onChange={handleInputChange}
@@ -149,11 +181,12 @@ export default function NewMissionForm({ onClose }: NewMissionFormProps) {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">
+                  <label htmlFor="startTime" className="block text-sm font-medium text-gray-300 mb-1">
                     Start Time
                   </label>
                   <input
                     type="datetime-local"
+                    id="startTime"
                     name="startTime"
                     value={formData.startTime}
                     onChange={handleInputChange}
@@ -163,10 +196,11 @@ export default function NewMissionForm({ onClose }: NewMissionFormProps) {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">
+                  <label htmlFor="drone" className="block text-sm font-medium text-gray-300 mb-1">
                     Select Drone
                   </label>
                   <select
+                    id="drone"
                     name="drone"
                     value={formData.drone}
                     onChange={handleInputChange}
@@ -191,98 +225,11 @@ export default function NewMissionForm({ onClose }: NewMissionFormProps) {
               />
             </div>
 
-            {/* Flight Configuration */}
-            <div className="bg-gray-800 rounded-lg p-4">
-              <h3 className="text-lg font-semibold text-white mb-4">Flight Configuration</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">
-                    Altitude (m)
-                  </label>
-                  <input
-                    type="number"
-                    value={flightConfig?.flightPath?.altitude || 50}
-                    onChange={(e) => handleConfigUpdate({
-                      flightPath: {
-                        ...flightConfig?.flightPath,
-                        altitude: Number(e.target.value)
-                      }
-                    })}
-                    className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white"
-                    min="10"
-                    max="120"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">
-                    Image Overlap (%)
-                  </label>
-                  <input
-                    type="number"
-                    value={flightConfig?.flightPath?.overlap || 70}
-                    onChange={(e) => handleConfigUpdate({
-                      flightPath: {
-                        ...flightConfig?.flightPath,
-                        overlap: Number(e.target.value)
-                      }
-                    })}
-                    className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white"
-                    min="0"
-                    max="100"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">
-                    Capture Frequency (s)
-                  </label>
-                  <input
-                    type="number"
-                    value={flightConfig?.dataCollection?.frequency || 1}
-                    onChange={(e) => handleConfigUpdate({
-                      dataCollection: {
-                        ...flightConfig?.dataCollection,
-                        frequency: Number(e.target.value)
-                      }
-                    })}
-                    className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white"
-                    min="1"
-                    max="10"
-                  />
-                </div>
-              </div>
-
-              <div className="mt-4">
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Sensors
-                </label>
-                <div className="flex flex-wrap gap-4">
-                  {['RGB', 'NDVI', 'Thermal', 'Multispectral'].map((sensor) => (
-                    <label key={sensor} className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        checked={flightConfig?.dataCollection?.sensors?.includes(sensor) || false}
-                        onChange={(e) => {
-                          const currentSensors = flightConfig?.dataCollection?.sensors || [];
-                          const newSensors = e.target.checked
-                            ? [...currentSensors, sensor]
-                            : currentSensors.filter(s => s !== sensor);
-                          handleConfigUpdate({
-                            dataCollection: {
-                              ...flightConfig?.dataCollection,
-                              sensors: newSensors
-                            }
-                          });
-                        }}
-                        className="rounded border-gray-600 text-blue-500 focus:ring-blue-500"
-                      />
-                      <span className="text-gray-300">{sensor}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            </div>
+            {/* Section for Flight Configuration Inputs */}
+            <FlightConfigInputs 
+              flightConfig={flightConfig}
+              onConfigUpdate={handleConfigUpdate}
+            />
 
             {/* Form Actions */}
             <div className="flex justify-end space-x-4">
