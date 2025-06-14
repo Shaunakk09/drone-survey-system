@@ -2,6 +2,8 @@
 
 This project is a web-based application designed to manage drone survey missions, visualize flight paths and survey areas on an interactive map, and potentially integrate with real-time drone data and analytics.
 
+Application link - https://dronesurveysystem.netlify.app/dashboard
+
 ## Table of Contents
 
 - [Features](#features)
